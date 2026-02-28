@@ -1,44 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --color-surface: #1A1D27;
-  --color-border: #2A2D3E;
-  --color-primary: #6C63FF;
-  --color-success: #00D68F;
-  --color-warning: #FFAA00;
-  --color-danger: #FF3D71;
-  --color-text-primary: #FFFFFF;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-background: #F0EEE9;
+  --color-card-surface: #FAF9F6;
+  --color-secondary-card-surface: #E5E2DC;
+  --color-border: #E5E2DC;
+  --color-primary: #5B52E8;
+  --color-normal: #059669;
+  --color-warning: #D97706;
+  --color-alert: #DC2626;
+  --color-text-primary: #1A1A2E;
   --color-text-secondary: #8F9BB3;
+  --color-text-orange: #e89607;
 }
 
 @layer base {
   body {
-    @apply bg-surface text-text-primary;
+    @apply bg-background text-text-primary font-sans;
   }
 }
 
 @layer components {
   .card {
-    @apply rounded-xl border border-border bg-surface p-5 shadow-sm;
+    @apply rounded-xl border border-border bg-card-surface p-5 shadow-sm;
   }
 
-  .card-title {
-    @apply text-lg font-semibold text-text-primary;
-  }
-
-  .card-subtitle {
-    @apply text-sm text-text-secondary;
-  }
-
-  .badge-success {
-    @apply inline-flex rounded-md bg-success/15 px-2 py-1 text-xs font-medium text-success;
-  }
-
-  .badge-warning {
-    @apply inline-flex rounded-md bg-warning/15 px-2 py-1 text-xs font-medium text-warning;
-  }
-
-  .badge-danger {
-    @apply inline-flex rounded-md bg-danger/15 px-2 py-1 text-xs font-medium text-danger;
+  .secondary-card {
+    @apply rounded-xl border border-border bg-secondary-card-surface p-5 shadow-sm;
   }
 }
