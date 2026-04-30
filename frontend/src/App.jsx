@@ -1,75 +1,80 @@
 ﻿import { useState, useEffect } from "react";
 import SimpleAreaChart from "./charts";
 
-const generateHR = (base = 72) => Math.round(base + (Math.random() - 0.5) * 12);
-const generateHistory = () => Array.from({ length: 30 }, (_, i) => ({ t: i, v: generateHR() }));
-
 function App() {
-  const [heartRate, setHeartRate] = useState(72);
-  
-  // 🔴 FIX 1: Initialize with generateHistory() so the chart isn't empty at startup
-  const [heartRateHistory, setHeartRateHistory] = useState(generateHistory());
-  
-  const [activityLevel, setActivityLevel] = useState("Active");
-  const [bodyTemp, setBodyTemp] = useState(36.6);
-  const [bloodOxygen, setBloodOxygen] = useState(98);
+  const [heartRate, setHeartRate] = useState(0);
+  const [heartRateHistory, setHeartRateHistory] = useState([]);
+  const [activityLevel, setActivityLevel] = useState("Resting");
+  const [bodyTemp, setBodyTemp] = useState(0);
+  const [bloodOxygen, setBloodOxygen] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   const [time, setTime] = useState(new Date());
   const [alert, setAlert] = useState(true);
 
+  // Fetch history on page load
   useEffect(() => {
-    const interval = setInterval(() => {
-      const newheartRate = generateHR(72);
-      setHeartRate(newheartRate);
-      setHeartRateHistory(prev => [...prev.slice(1), 
-        { t: prev[prev.length - 1].t + 1
-        , v: newheartRate }]);
-      setTime(new Date());
-    }, 1200);
-    return () => clearInterval(interval);
-  }, [])
+    fetch("http://localhost:8000/history")
+      .then(res => res.json())
+      .then(data => {
+        setHeartRateHistory(data.map((d, i) => ({ t: i, v: d.bpm })));
+        if (data.length > 0) {
+          const latest = data[data.length - 1];
+          setHeartRate(latest.bpm);
+          setBodyTemp(latest.temp);
+          setBloodOxygen(latest.spo2);
+        }
+      });
+  }, []);
 
-  useEffect(() =>{
-    const interval = setInterval(()=>{
-      const newTemp = (Math.random() * 0.4 + 36.4).toFixed(1);
-      setBodyTemp(newTemp);
-    }, 3000);
-    return () => clearInterval(interval);
-  },[])
-
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-      const newOxygen = Math.round(95 + Math.random() * 5);
-      setBloodOxygen(newOxygen);
-    }, 2500);
-    return () => clearInterval(interval);
-  },[])
-
+  // WebSocket — live data
   useEffect(() => {
-  if (heartRate > 100) setActivityLevel("Exercising");
-  else if (heartRate > 70) setActivityLevel("Active");
-  else setActivityLevel("Resting");
-}, [heartRate]);
+    const ws = new WebSocket("ws://localhost:8000/ws");
 
-  // Define the activityIcon mapping inside the component so it can use the activityLevel state
+    ws.onopen = () => console.log("WebSocket connected");
+
+    ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  setHeartRate(data.bpm);
+  setBodyTemp(data.temp);
+  setBloodOxygen(data.spo2);
+  setTime(new Date());
+  setHeartRateHistory(prev => {
+    const lastT = prev.length > 0 ? prev[prev.length - 1].t : 0;
+    return [...prev.slice(1), { t: lastT + 1, v: data.bpm }];
+  });
+};
+
+    ws.onerror = (err) => console.log("WebSocket error:", err);
+    ws.onclose = () => console.log("WebSocket closed");
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, []);
+
+  // Activity level derived from heart rate
+  useEffect(() => {
+    if (heartRate > 100) setActivityLevel("Exercising");
+    else if (heartRate > 70) setActivityLevel("Active");
+    else setActivityLevel("Resting");
+  }, [heartRate]);
+
   const activityIcon = {
     "Resting": "🧘‍♂️",
     "Active": "🚶‍♂️",
     "Exercising": "🏃‍♂️"
   };
 
-  // 1. Temperature Threshold Logic
+  // Temperature threshold logic
   const isTempNormal = bodyTemp >= 36.1 && bodyTemp <= 37.2;
   const isTempHigh = bodyTemp > 37.2;
-  
-  // Decide what text to show
   const tempStatusText = isTempNormal ? "Within normal range" : (isTempHigh ? "Above normal (Fever)" : "Below normal (Hypothermia)");
-  
-  // Decide what color the text should be
   const tempTextColor = isTempNormal ? "text-text-primary" : (isTempHigh ? "text-red-500" : "text-blue-500");
   const tempNumberColor = isTempNormal ? "text-warning" : (isTempHigh ? "text-red-500" : "text-blue-500");
 
-  // 2. Blood Oxygen Threshold Logic
+  // Blood oxygen threshold logic
   const isOxygenNormal = bloodOxygen >= 95;
   const oxygenStatusText = isOxygenNormal ? "Normal > 95%" : "Warning: Low Oxygen";
   const oxygenBarColor = isOxygenNormal ? "bg-primary" : "bg-red-500";
@@ -81,9 +86,9 @@ function App() {
       {/*Heart Rate Card */}
       <div className="card   p-8 md:col-span-3 text-text-primary/70 flex flex-col min-h-[25rem] w-full">
         <h3 className="font-mono text-sm uppercase tracking-[0.18em] text-text-secondary">Heart Rate</h3>
-          
-          <SimpleAreaChart data={heartRateHistory} />
-        
+
+        <SimpleAreaChart data={heartRateHistory} />
+
         <div className="mt-auto">
           <p className="font-mono uppercase text-text-secondary text-5xl font-bold ">{heartRate} bpm</p>
           <p className="font-mono text-text-secondary">current reading</p>
@@ -94,10 +99,10 @@ function App() {
       <div className="card  min-h-[320px] p-8 text-text-primary/70 flex flex-col items-center w-full md:max-w-sm md:justify-self-center">
         <h3 className="mt-2 font-mono text-sm uppercase tracking-[0.18em] text-text-secondary">Activity Level</h3>
         <span className="mt-6 flex h-[120px] w-[120px] bg-green-50 items-center justify-center rounded-full border-[6px] border-solid border-green-500 text-green-600 text-5xl">
-          
+
           {/* REPLACE THE HARDCODED EMOJI WITH THIS */}
           {activityIcon[activityLevel]}
-          
+
         </span>
         <p className="mt-6 text-4xl font-bold">{activityLevel}</p>
       </div>
