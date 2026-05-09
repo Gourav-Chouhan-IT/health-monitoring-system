@@ -11,14 +11,14 @@
   --sage:    #5C766D;
 
   /* ── Light surfaces ── */
-  --bg:       #EDE9E6;
-  --surface:  #F7F4F1;
-  --surface2: #EDE9E6;
+  --bg:       #EDE9E6;          /* cream as page bg */
+  --surface:  #F7F4F1;          /* near-white cards */
+  --surface2: #EDE9E6;          /* cream for inset areas */
   --border:   rgba(92,79,74,.12);
 
   /* ── Text ── */
-  --text:       #3a2e2a;
-  --text-muted: #9a8880;
+  --text:       #3a2e2a;        /* very dark espresso */
+  --text-muted: #9a8880;        /* warm mid-tone */
 
   /* ── Stress ── */
   --stress-low:    #5C766D;
@@ -86,6 +86,7 @@ body {
 }
 .badge-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
+/* Live — filled sage green */
 .badge--online {
   background: var(--sage);
   color: #fff;
@@ -97,6 +98,7 @@ body {
   animation: pulse-dot 2s infinite;
 }
 
+/* Offline — muted outline */
 .badge--offline {
   background: transparent;
   color: var(--text-muted);
@@ -104,6 +106,7 @@ body {
 }
 .badge--offline .badge-dot { background: var(--text-muted); }
 
+/* Hardware — filled caramel */
 .badge--hardware {
   background: var(--caramel);
   color: #fff;
@@ -115,6 +118,7 @@ body {
   animation: pulse-dot 2s infinite;
 }
 
+/* Demo Mode — amber outline, warm tint */
 .badge--demo {
   background: rgba(201,153,107,.14);
   color: #8a5c2e;
@@ -227,6 +231,7 @@ body {
   pointer-events: none;
 }
 
+/* ── Ring ── */
 .stress-ring-wrap { flex-shrink: 0; }
 
 .stress-ring {
@@ -268,6 +273,7 @@ body {
   font-weight: 600;
 }
 
+/* ── Hero meta ── */
 .hero-meta { display: flex; flex-direction: column; gap: .5rem; }
 
 .last-update-label {
@@ -324,6 +330,7 @@ body {
   border-color: rgba(92,79,74,.2);
 }
 
+/* Colored left accent */
 .card--hr::after   { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent-hr);   border-radius: 3px 0 0 3px; }
 .card--spo2::after { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent-spo2); border-radius: 3px 0 0 3px; }
 .card--temp::after { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent-temp); border-radius: 3px 0 0 3px; }
@@ -357,6 +364,7 @@ body {
 }
 .card-unit { font-size: .85rem; color: var(--text-muted); font-weight: 500; }
 
+/* Mini bar */
 .mini-bar-wrap {
   height: 3px;
   background: var(--surface2);
@@ -373,6 +381,7 @@ body {
 .card--spo2 .mini-bar { background: var(--accent-spo2); }
 .card--temp .mini-bar { background: var(--accent-temp); }
 
+/* Heartbeat dot */
 .beat-dot {
   position: absolute;
   top: 1rem; right: 1rem;
