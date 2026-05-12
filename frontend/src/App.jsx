@@ -24,7 +24,7 @@ import SensorChart from './components/SensorChart';
 import DemoControl from './components/DemoControl';
 import Toast from './components/Toast';
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 const MAX_HISTORY = 30;
 
 const roundedNumber = (value, decimals = 0) => {
@@ -51,6 +51,32 @@ export default function App() {
     setToast(msg);
     clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToast(''), 2800);
+  }, []);
+
+  // Load historical readings on mount
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch(`${BACKEND}/api/readings?limit=${MAX_HISTORY}`);
+        const data = await response.json();
+        if (data.status === 'success' && data.readings) {
+          const history = data.readings.map((reading) => ({
+            time: new Date(reading.timestamp).toLocaleTimeString(),
+            heartRate: roundedNumber(reading.heartRate),
+            spo2: roundedNumber(reading.spo2),
+            temperature: roundedNumber(reading.temperature, 1),
+            stressLevel: reading.stressLevel || 'Low',
+            stressScore: Number.isFinite(Number(reading.stressScore))
+              ? roundedNumber(reading.stressScore)
+              : stressScoreFromLevel(reading.stressLevel),
+          }));
+          setSensorHistory(history);
+        }
+      } catch (err) {
+        console.warn('Failed to load history:', err.message);
+      }
+    };
+    fetchHistory();
   }, []);
 
   useEffect(() => {

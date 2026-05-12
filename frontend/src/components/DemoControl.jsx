@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function DemoControl({ showToast }) {
   const [activeMode, setActiveMode] = useState('NORMAL');
