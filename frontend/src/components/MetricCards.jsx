@@ -15,10 +15,11 @@ function BeatDot({ readingCount }) {
   return <div ref={ref} className="beat-dot" />;
 }
 
-export default function MetricCards({ heartRate, spo2, temperature, stressLevel, readingCount }) {
+export default function MetricCards({ heartRate, spo2, temperature, gsr, stressLevel, readingCount }) {
   const hr   = heartRate   != null ? Math.round(heartRate) : null;
   const sp   = spo2        != null ? Math.round(spo2) : null;
   const temp = temperature != null ? Number(temperature).toFixed(1) : null;
+  const gsrValue = gsr != null ? Math.round(gsr) : null;
 
   const hrColor =
     stressLevel === 'High'   ? 'var(--stress-high)'
@@ -28,6 +29,7 @@ export default function MetricCards({ heartRate, spo2, temperature, stressLevel,
   const hrBarW   = hr   != null ? `${clamp((hr / 180) * 100, 0, 100)}%` : '0%';
   const spo2BarW = sp   != null ? `${clamp(((sp - 90) / 10) * 100, 0, 100)}%` : '0%';
   const tempBarW = temp != null ? `${clamp(((parseFloat(temp) - 35) / 5) * 100, 0, 100)}%` : '0%';
+  const gsrBarW = gsrValue != null ? `${clamp((gsrValue / 600) * 100, 0, 100)}%` : '0%';
 
   return (
     <section className="cards-grid">
@@ -41,7 +43,7 @@ export default function MetricCards({ heartRate, spo2, temperature, stressLevel,
         <div className="card-body">
           <span className="card-title">Heart Rate</span>
           <div className="card-value-row">
-            <span className="card-value" style={{ color: hrColor }}>{hr ?? '—'}</span>
+            <span className="card-value" style={{ color: hrColor }}>{hr ?? '-'}</span>
             <span className="card-unit">bpm</span>
           </div>
           <div className="mini-bar-wrap">
@@ -61,7 +63,7 @@ export default function MetricCards({ heartRate, spo2, temperature, stressLevel,
         <div className="card-body">
           <span className="card-title">SpO₂</span>
           <div className="card-value-row">
-            <span className="card-value">{sp ?? '—'}</span>
+            <span className="card-value">{sp ?? '-'}</span>
             <span className="card-unit">%</span>
           </div>
           <div className="mini-bar-wrap">
@@ -79,11 +81,30 @@ export default function MetricCards({ heartRate, spo2, temperature, stressLevel,
         <div className="card-body">
           <span className="card-title">Temperature</span>
           <div className="card-value-row">
-            <span className="card-value">{temp ?? '—'}</span>
+            <span className="card-value">{temp ?? '-'}</span>
             <span className="card-unit">°C</span>
           </div>
           <div className="mini-bar-wrap">
             <div className="mini-bar" style={{ width: tempBarW }} />
+          </div>
+        </div>
+      </div>
+
+      <div className="card card--gsr">
+        <div className="card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2v20" />
+            <path d="M7 7c0-2.2 2.2-4 5-4s5 1.8 5 4-2.2 4-5 4-5 1.8-5 4 2.2 4 5 4 5-1.8 5-4" />
+          </svg>
+        </div>
+        <div className="card-body">
+          <span className="card-title">GSR</span>
+          <div className="card-value-row">
+            <span className="card-value">{gsrValue ?? '-'}</span>
+            <span className="card-unit">ADC</span>
+          </div>
+          <div className="mini-bar-wrap">
+            <div className="mini-bar" style={{ width: gsrBarW }} />
           </div>
         </div>
       </div>

@@ -8,16 +8,23 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-export default function HeartRateChart({ hrHistory }) {
+export default function SensorChart({
+  data,
+  label,
+  dataKey,
+  unit,
+  color,
+  domain,
+}) {
   return (
     <section className="chart-section card">
       <div className="chart-header">
-        <span className="card-title">Heart Rate History</span>
+        <span className="card-title">{label} History</span>
         <span className="chart-range">last 30 readings</span>
       </div>
       <div className="chart-wrap">
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={hrHistory} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+          <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(92,79,74,.07)" />
             <XAxis
               dataKey="time"
@@ -27,7 +34,7 @@ export default function HeartRateChart({ hrHistory }) {
               interval="preserveStartEnd"
             />
             <YAxis
-              domain={[50, 140]}
+              domain={domain}
               tick={{ fill: '#9a8880', fontSize: 11 }}
               tickLine={false}
               axisLine={{ stroke: 'rgba(92,79,74,.12)' }}
@@ -41,15 +48,15 @@ export default function HeartRateChart({ hrHistory }) {
               }}
               labelStyle={{ color: '#9a8880' }}
               itemStyle={{ color: '#3a2e2a' }}
-              formatter={(v) => [`${v} bpm`, 'Heart Rate']}
+              formatter={(v) => [`${v} ${unit}`, label]}
             />
             <Line
               type="monotone"
-              dataKey="hr"
-              stroke="#c26252"
+              dataKey={dataKey}
+              stroke={color}
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#c26252' }}
+              activeDot={{ r: 4, fill: color, stroke: '#fff', strokeWidth: 2 }}
               isAnimationActive={false}
             />
           </LineChart>

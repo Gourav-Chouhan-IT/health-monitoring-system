@@ -1,18 +1,20 @@
-export default function StressHero({ stressLevel, motion, timestamp }) {
+export default function StressHero({ stressLevel, stressScore, motion, timestamp }) {
   const stressClass =
     stressLevel === 'High'   ? 'stress--high'
     : stressLevel === 'Medium' ? 'stress--medium'
     : 'stress--low';
 
   const isActive = motion === 'Active';
+  const score = stressScore != null ? Math.round(stressScore) : null;
 
   return (
     <section className="hero-section">
       <div className="stress-ring-wrap">
         <div className={`stress-ring ${stressClass}`}>
           <div className="stress-ring-inner">
+            <span className="stress-score">{score ?? '—'}</span>
             <span className="stress-label">{stressLevel || 'Low'}</span>
-            <span className="stress-sublabel">Stress Level</span>
+            <span className="stress-sublabel">/ 100</span>
           </div>
         </div>
       </div>
