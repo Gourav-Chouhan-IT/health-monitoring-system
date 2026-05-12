@@ -1,41 +1,112 @@
-# 🏥 Health Monitoring System
+# 🩺 Health Monitoring System
 
-A real-time health monitoring dashboard that streams live sensor data from Arduino to a React frontend via a FastAPI WebSocket backend.
-
-> **Status:** Phase 1 Complete — Live dashboard with WebSocket streaming  
-> **Phase 2 (In Progress):** MongoDB storage + JWT authentication  
+A real-time health monitoring system that reads biometric data from wearable sensors, computes a stress score, and displays live vitals on a web dashboard.
 
 ---
 
-## 📸 Dashboard Preview
+## 📸 Overview
 
-> Heart Rate · Body Temperature · Blood Oxygen (SpO₂) · Activity Level — all updating live in the browser.
+This project connects physical sensors (heart rate, SpO2, temperature, motion, GSR) to a full-stack web application via a Python bridge. Data is processed on the backend, stress is calculated in real time, and the frontend updates live over WebSockets.
+
+---
+
+## 🎥 Demo
+
+### Hardware — Sensors & Serial Monitor
+
+[![Hardware Demo](docs/V1.0.0/hardware/prototype-assembled-powered.jpg)](https://youtube.com/shorts/ZbYpkuElk0s)
+
+> Arduino Nano wired with MAX30102 (HR + SpO2), TMP117 (temperature),
+> MPU6050 (motion), and GSR sensor streaming live data over Bluetooth.
+> Motion detection shown live — value spikes instantly on arm movement.
+
+---
+
+### Software — Live Dashboard
+
+[![Software Demo](docs/V1.0.0/software/dashboard-overview.png)](https://youtu.be/Y19A_cPrt-s)
+
+> StressWatch dashboard showing live vitals, 30-reading history charts,
+> score breakdown, and intelligent differentiation between stress vs
+> active/exercise states using demo mode simulation.
+
+---
+
+## 🖥️ Dashboard
+
+| Overview | Metric Cards & Charts |
+|---|---|
+| ![Dashboard Overview](docs/V1.0.0/software/dashboard-overview.png) | ![Metric Cards](docs/V1.0.0/software/dashboard-metric-cards-and-hr-chart.png) |
+
+| History Charts | Score Breakdown |
+|---|---|
+| ![Charts](docs/V1.0.0/software/dashboard-charts-spo2-temp-stress.png) | ![Breakdown](docs/V1.0.0/software/dashboard-score-breakdown.png) |
+
+![Demo Controls](docs/V1.0.0/software/dashboard-demo-controls.png)
+
+---
+
+## 🔧 Hardware
+
+| Bluetooth Module | Arduino Nano |
+|---|---|
+| ![HC-05 Bluetooth](docs/V1.0.0/hardware/hc05-bluetooth-module.jpg) | ![Arduino Nano](docs/V1.0.0/hardware/arduino-nano-wiring.jpg) |
+
+| Battery Charger | Full Prototype |
+|---|---|
+| ![TP4056 Charger](docs/V1.0.0/hardware/tp4056-battery-charger.jpg) | ![Assembled Prototype](docs/V1.0.0/hardware/prototype-assembled-powered.jpg) |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-Arduino (ESP32) ──► bridge.py ──► FastAPI Backend ──► React Frontend
-   [Sensors]        [Serial/Mock]   [WebSocket + REST]   [Live Dashboard]
+Arduino Sensors
+    ↓  (Serial / Bluetooth JSON)
+bridge.py  ──── fallback: fake_band.py
+    ↓  (HTTP POST)
+Node.js Backend  →  MongoDB
+    ↓  (Socket.IO)
+React Frontend
 ```
-
-**Sensors:** Heart Rate (BPM) · Body Temperature (°C) · Blood Oxygen (SpO₂) · GSR  
-**Communication:** Serial (live) / Mock data generator (dev mode)  
-**Streaming:** WebSocket for real-time updates, REST for history
 
 ---
 
-## 🛠️ Tech Stack
+## ✅ Features (V1)
+
+- 📡 **Live sensor data** from Arduino over USB/Bluetooth
+- 🔁 **Demo fallback** — bridge auto-switches to simulated data if hardware is unavailable
+- 🧠 **Stress scoring engine** — calculates stress from HR, GSR, SpO2, and temperature
+- 💾 **MongoDB persistence** — every reading is saved
+- ⚡ **Real-time updates** via Socket.IO — no page refresh needed
+- 📊 **Live charts** — last 30 readings for HR, SpO2, temperature, and stress history
+- 🎛️ **Demo mode controls** — simulate NORMAL / STRESS / ACTIVE states from the UI
+
+---
+
+## 🧰 Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React.js, Tailwind CSS, Recharts |
-| Backend | Python, FastAPI, WebSocket |
-| Bridge | Python (Serial / Mock mode) |
-| Hardware | Arduino / ESP32, health sensors |
-| Auth (Phase 2) | JWT Authentication |
-| Database (Phase 2) | MongoDB |
+|---|---|
+| Frontend | React 18, Vite, Recharts, Socket.IO Client |
+| Backend | Node.js, Express 5, Socket.IO, Mongoose |
+| Database | MongoDB |
+| Bridge | Python 3, pyserial, requests |
+| Firmware | Arduino C++, MAX30105, TMP117, MPU6050 |
+
+---
+
+## 🔌 Hardware Components
+
+| Component | Purpose |
+|---|---|
+| Arduino Nano | Main microcontroller |
+| MAX30102 | Heart rate + SpO2 |
+| TMP117 | Body temperature |
+| MPU6050 | Motion detection |
+| GSR (A0) | Galvanic skin response (stress indicator) |
+| HC-05 | Bluetooth data transmission |
+| TP4056 | Li-ion battery charging (USB-C) |
 
 ---
 
@@ -43,96 +114,256 @@ Arduino (ESP32) ──► bridge.py ──► FastAPI Backend ──► React Fr
 
 ```
 health-monitoring-system/
-├── arduino/          # Arduino/ESP32 sensor code
-├── backend/          # FastAPI server (main.py)
-├── bridge/           # Python data bridge (bridge.py)
-├── frontend/         # React.js dashboard
-└── README.md
+├── arduino/
+│   └── stress/
+│       └── stress.ino          # Firmware — reads sensors, emits JSON via Serial
+├── bridge/
+│   ├── bridge.py               # Reads serial data, validates, POSTs to backend
+│   └── fake_band.py            # Simulated sensor data generator
+├── backend/
+│   ├── server.js               # Express + Socket.IO server
+│   ├── models/
+│   │   └── Reading.js          # Mongoose schema
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx             # Root component, socket connection, state
+│   │   └── components/
+│   │       ├── Header.jsx
+│   │       ├── ModeBanner.jsx
+│   │       ├── StressHero.jsx
+│   │       ├── MetricCards.jsx
+│   │       ├── SensorChart.jsx
+│   │       ├── StressHistoryChart.jsx
+│   │       ├── StressBreakdown.jsx
+│   │       ├── DemoControl.jsx
+│   │       └── Toast.jsx
+│   └── package.json
+├── docs/
+│   └── V1.0.0/
+│       ├── hardware/           # Hardware photos
+│       ├── software/           # Dashboard screenshots
+│       ├── v1-demo-hardware-health-monitoring.mp4
+│       └── v1-demo-software-health-monitoring.mp4
+└── package.json
 ```
 
 ---
 
-## ⚙️ Setup & Running
+## 🚀 Getting Started
 
-### 1. Backend
+### Prerequisites
+
+- Node.js v18+
+- Python 3.8+
+- MongoDB (local or Atlas)
+- Arduino IDE (for firmware upload)
+
+---
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Gourav-Chouhan-IT/health-monitoring-system.git
+cd health-monitoring-system
+```
+
+---
+
+### 2. Backend setup
 
 ```bash
 cd backend
-pip install fastapi uvicorn
-uvicorn main:app --reload --port 8000
+npm install
 ```
 
-### 2. Bridge (Mock Mode — no hardware needed)
+Create a `.env` file in the `backend/` folder:
+
+```env
+MONGO_URI=mongodb://localhost:27017/healthmonitor
+PORT=5000
+```
+
+Start the backend:
 
 ```bash
-cd bridge
-pip install requests
-python bridge.py
+npm start
 ```
 
-> To use live ESP32 data, change `MODE = "mock"` to `MODE = "live"` in `bridge.py` and connect your Arduino via serial.
+---
 
-### 3. Frontend
+### 3. Frontend setup
 
 ```bash
 cd frontend
 npm install
+```
+
+Create a `.env` file in the `frontend/` folder:
+
+```env
+VITE_BACKEND_URL=http://localhost:5000
+```
+
+Start the frontend:
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+---
+
+### 4. Bridge setup
+
+```bash
+cd bridge
+pip install pyserial requests
+```
+
+With Arduino connected:
+
+```bash
+python bridge.py
+```
+
+Without hardware (simulation mode):
+
+```bash
+python fake_band.py
+```
 
 ---
 
-## 📊 Dashboard Features
+### 5. Arduino firmware
 
-- **Heart Rate** — Live BPM with area chart history
-- **Activity Level** — Auto-detected from BPM (Resting / Active / Exercising)
-- **Body Temperature** — Real-time °C with fever/hypothermia alerts
-- **Blood Oxygen (SpO₂)** — Live % with low oxygen warning and progress bar
-- **WebSocket streaming** — All values update every second
-
-### Health Thresholds
-
-| Metric | Normal Range | Alert |
-|--------|-------------|-------|
-| Heart Rate | 60–100 BPM | Active > 70, Exercising > 100 |
-| Body Temp | 36.1°C – 37.2°C | Fever > 37.2°C, Hypothermia < 36.1°C |
-| SpO₂ | ≥ 95% | Warning below 95% |
+1. Open `arduino/stress/stress.ino` in Arduino IDE
+2. Install required libraries:
+   - `MAX30105` by SparkFun
+   - `SparkFun TMP117`
+   - `MPU6050` by Electronic Cats
+3. Upload to your Arduino board
 
 ---
 
-## 🔌 API Endpoints
+## 🧠 Stress Scoring Logic
+
+The backend calculates a stress score (0–100) from four inputs:
+
+| Metric | Low Stress | Medium | High Stress |
+|---|---|---|---|
+| Heart Rate | 60–79 bpm | 80–109 bpm | 110+ bpm |
+| GSR | < 200 | 200–599 | 600+ |
+| SpO2 | ≥ 97% | 94–96% | < 90% |
+| Temperature | 36.1–37.2°C | 37.3–38.0°C | > 38.0°C |
+
+- **Motion modifier** — `Active` movement reduces score by 30% to account for exercise
+- **Final label** — `Low` (< 40) · `Medium` (40–69) · `High` (≥ 70)
+
+---
+
+## 🎛️ Demo Mode
+
+No hardware? Use the **Demo Controls** panel in the UI to simulate scenarios:
+
+| Mode | Simulates |
+|---|---|
+| `NORMAL` | Resting, healthy vitals |
+| `STRESS` | High HR, inactive, elevated GSR |
+| `ACTIVE` | Elevated HR, active movement |
+
+Demo overrides auto-reset to `NORMAL` after 15 seconds.
+
+---
+
+## 🌐 API Endpoints
 
 | Method | Endpoint | Description |
-|--------|---------|-------------|
-| GET | `/` | Health check |
-| GET | `/history` | Last 30 sensor readings |
-| POST | `/data` | Receive data from bridge |
-| WS | `/ws` | WebSocket live stream |
+|---|---|---|
+| `POST` | `/api/data` | Receive raw sensor payload from bridge |
+| `POST` | `/api/control` | Set demo mode override |
+| `GET` | `/api/readings?limit=N` | Fetch last N saved readings |
+
+---
+
+## 📡 Arduino Serial Output Format
+
+```json
+{
+  "hr": 72,
+  "spo2": 98,
+  "temp": 36.7,
+  "gsr": 421,
+  "motion_value": 12,
+  "movement": "MOVED"
+}
+```
+
+---
+
+## ⚠️ Known Limitations (V1)
+
+- SpO2 reading from Arduino is a fixed estimate — full MAX30102 SpO2 algorithm not yet implemented
+- Frontend sensor history is in-memory only — clears on page refresh
+- `GET /api/readings` exists but frontend does not load history on startup
+- No authentication (login page is a placeholder)
+- Serial port is hardcoded to `COM6` in `bridge.py`
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] FastAPI backend with WebSocket streaming
-- [x] Python data bridge (mock + serial modes)
-- [x] React dashboard with live charts and health alerts
-- [x] Arduino sensor integration code
-- [ ] MongoDB — persistent data storage
-- [ ] JWT authentication — user accounts and data isolation
-- [ ] Deploy to cloud (Render / Railway)
+### V2 — Page 1: History / Analytics
+
+- [ ] Sensor charts (HR, SpO2, Temperature) over time using saved readings
+- [ ] Stress level timeline
+- [ ] Filter by last 1 hr / 6 hr / 24 hr / 7 days
+- [ ] Wire up `GET /api/readings` which already exists in the backend
 
 ---
 
-## 👤 Author
+### V2 — Page 2: Login / Authentication
 
-**Gourav Chouhan**  
-B.Tech Information Technology, VIT Bhopal  
-[GitHub](https://github.com/Gourav-Chouhan-IT) · [LinkedIn](https://www.linkedin.com/in/gourav-chouhan-071036374)
+- [ ] JWT-based login and registration
+- [ ] `bcryptjs` and `jsonwebtoken` are already installed in the backend
+- [ ] Protected routes on frontend
+- [ ] Per-user reading history in MongoDB
+
+---
+
+### V2 — Page 3: Settings
+
+- [ ] Serial port selection from UI (instead of hardcoded `COM6`)
+- [ ] Alert thresholds (e.g. notify if HR > 110 or stress is High)
+- [ ] Temperature unit toggle (°C / °F)
+- [ ] User name and profile
+
+---
+
+### V2 — Page 4: Alerts / Event Log
+
+- [ ] Auto-log entry every time stress level hits `High`
+- [ ] Filterable list of past stress events with timestamps
+- [ ] Severity indicators per event
+- [ ] Exportable log
+
+---
+
+### V2 — Page 5: AI Insights ⭐
+
+- [ ] User clicks "Analyze" and gets a plain English health summary
+- [ ] Pattern detection — e.g. "Your stress peaks between 5–7 PM"
+- [ ] Powered by Claude API
+- [ ] Requires history data and login to be meaningful
 
 ---
 
 ## 📄 License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License — feel free to use and modify.
+
+---
+
+## 👤 Author
+
+**Gourav Chouhan**
+[GitHub](https://github.com/Gourav-Chouhan-IT)
