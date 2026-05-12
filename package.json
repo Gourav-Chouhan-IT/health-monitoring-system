@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && node server.js"
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "recharts": "^3.8.1",
